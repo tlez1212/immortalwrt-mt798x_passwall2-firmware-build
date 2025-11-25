@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    name: build-firmware
+    name: Build-firmware
     runs-on: ubuntu-22.04
 
     permissions:
@@ -22,7 +22,7 @@ jobs:
       actions: write
     
     steps:
-    - name: Free disk space (Ubuntu)
+    - name: Free Disk Space (Ubuntu)
       uses: jlumbroso/free-disk-space@main
       with:
         tool-cache: false
@@ -33,9 +33,9 @@ jobs:
         swap-storage: false
 
     - name: Checkout Code
-      uses: actions/checkout@main
+      uses: actions/checkout@v4
 
-    - name: Initialization environment
+    - name: Initialization Environment
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -70,25 +70,31 @@ jobs:
           $GITHUB_WORKSPACE/$SELF_BEFORE_SH
         fi
 
-    - name: Update feeds
+    - name: Update Feeds
       run: cd openwrt && ./scripts/feeds update -a
       
-    - name: Update golang version
+    - name: Update Golang Version
       run: |
         cd openwrt
         rm -rf feeds/packages/lang/golang/
         git clone https://github.com/sbwml/packages_lang_golang -b 25.x feeds/packages/lang/golang
 
-    - name: Update xray-core version
+    - name: Update Xray-core Version
       run: |
         cd openwrt
         rm -rf feeds/packages/net/{brook,chinadns-ng,dns2socks,dns2tcp,geoview,gn,hysteria,ipt2socks,microsocks,naiveproxy,pdnsd-alt,shadowsocks-libev,shadowsocksr-libev,shadowsocks-rust,simple-obfs,sing-box,ssocks,tcping,trojan,trojan-go,trojan-plus,tuic-client,v2ray-core,v2ray-geodata,v2ray-plugin,xray-core,xray-plugin}
-        cp -r feeds/passwall_packages/* feeds/packages/net/
+        # 判断存在文件才复制
+        if [ -d "feeds/passwall_packages" ]; then
+            cp -r feeds/passwall_packages/* feeds/packages/net/
+        else
+            echo "Warning: feeds/passwall_packages not found! Trying feeds/passwall..."
+            [ -d "feeds/passwall" ] && cp -r feeds/passwall/* feeds/packages/net/
+        fi
                 
-    - name: Install feeds
+    - name: Install Feeds
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: Load custom config
+    - name: Load Custom Config
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
@@ -117,7 +123,7 @@ jobs:
          [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
 
-    - name: Check space usage
+    - name: Check Space Usage
       if: (!cancelled())
       run: df -hT
 
@@ -131,7 +137,7 @@ jobs:
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload Firmware Artifact
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@v4
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
         name: ImmortalWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
