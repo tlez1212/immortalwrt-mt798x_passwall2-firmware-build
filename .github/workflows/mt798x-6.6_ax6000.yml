@@ -6,7 +6,7 @@ on:
 env:
   REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git
   REPO_BRANCH: openwrt-24.10-6.6
-  CONFIG_FILE: mt798x_ax6000_360t7.config
+  CONFIG_FILE: mt7986_ax6000.config
   SELF_BEFORE_SH: before-update-custom.sh
   SELF_AFTER_SH: after-update-custom.sh
   TZ: Asia/Shanghai
